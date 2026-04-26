@@ -103,7 +103,7 @@ fun ScanScreen(
                         imageId = uiState.markRes,
                         textConfirm = stringResource(R.string.gallery),
                         onConfirmation = {
-                            viewModel.hideDuplicateErrorDialog()
+                            viewModel.onCloseDuplicateErrorDialog()
                             onOpenGallery()
                         }
                     )
@@ -116,7 +116,7 @@ fun ScanScreen(
                         imageId = R.drawable.mark,
                         textConfirm = stringResource(R.string.ok),
                         onConfirmation = {
-                            viewModel.hideLocationErrorDialog()
+                            viewModel.onCloseLocationErrorDialog()
                         }
                     )
                 }
@@ -132,8 +132,20 @@ fun ScanScreen(
                         },
                         textDismiss = stringResource(R.string.skip),
                         onDismiss = {
-                            viewModel.hideDialog()
+                            viewModel.onCloseDialog()
                             onOpenGallery()
+                        }
+                    )
+                }
+
+                if (uiState.showErrorDialog && uiState.mark == null) {
+                    PopUpDialog(
+                        title = stringResource(R.string.dialog_invalid_qr_title),
+                        text = stringResource(R.string.dialog_invalid_qr_description),
+                        imageId = R.drawable.question_mark,
+                        textConfirm = stringResource(R.string.close),
+                        onConfirmation = {
+                            viewModel.onCloseErrorDialog()
                         }
                     )
                 }

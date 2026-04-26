@@ -22,4 +22,7 @@
     <string name="notes">Notes</string>
     <string name="toggle_show_all">Show all</string>
     <string name="toggle_group_by_city">Sort by city</string>
+    <string name="dialog_invalid_qr_title" >Invalid QR</string>
+    <string name="dialog_invalid_qr_description" >Maybe you are scanning something else</string>
+    <string name="close" >Close</string>
 </resources>

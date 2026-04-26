@@ -23,4 +23,7 @@
     <string name="empty_notes">Няма бележки...</string>
     <string name="toggle_show_all">Покажи всички</string>
     <string name="toggle_group_by_city">Групирай по град</string>
+    <string name="dialog_invalid_qr_title" >Невалиден QR код</string>
+    <string name="dialog_invalid_qr_description" >Може би сканирате нещо друго</string>
+    <string name="close" >Затвори</string>
 </resources>

@@ -39,6 +39,7 @@ class ScanViewModel(
     data class ScanUiState(
         val isLoading: Boolean = false,
         val showDialog: Boolean = false,
+        val showErrorDialog: Boolean = false,
         val showDuplicateErrorDialog: Boolean = false,
         val showLocationErrorDialog: Boolean = false,
         val mark: PostmarkModel? = null,
@@ -64,6 +65,12 @@ class ScanViewModel(
     fun onQrScanned(raw: String) {
         if (_uiState.value.mark != null) return
 
+        try {
+            Json.decodeFromString<PostmarkModel>(raw)
+        } catch (e: Exception) {
+            _uiState.update { it.copy(showErrorDialog = true) }
+            return
+        }
         val mark = Json.decodeFromString<PostmarkModel>(raw)
         _uiState.update {
             it.copy(
@@ -141,18 +148,25 @@ class ScanViewModel(
         }
     }
 
-    fun hideDuplicateErrorDialog(){
+    fun onCloseErrorDialog(){
+        _uiState.update { it.copy(showErrorDialog = false) }
+        viewModelScope.launch {
+            _event.emit(ScanEvent.NavigateBack)
+        }
+    }
+
+    fun onCloseDuplicateErrorDialog(){
         _uiState.update { it.copy(showDuplicateErrorDialog = false) }
     }
 
-    fun hideLocationErrorDialog(){
+    fun onCloseLocationErrorDialog(){
         _uiState.update { it.copy(showLocationErrorDialog = false) }
         viewModelScope.launch {
             _event.emit(ScanEvent.NavigateBack)
         }
     }
 
-    fun hideDialog(){
+    fun onCloseDialog(){
         _uiState.update { it.copy(showDialog = false) }
     }
 }
