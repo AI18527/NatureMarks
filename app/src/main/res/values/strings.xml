@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">NatureMarks</string>
+    <string name="allow_permissions">Allow permissions from settings</string>
+    <string name="welcome_text">Let\'s create memories with the nature!</string>
+    <string name="welcome_description">Make a collection of marks from various natural landmarks and keep them as a memento of your adventures!</string>
+    <string name="gallery">Gallery</string>
+    <string name="scan">Scan postmark</string>
+    <string name="scan_code">Scan QR code</string>
+    <string name="dialog_duplicate_title">Oops!</string>
+    <string name="dialog_duplicate_description">You already have this postmark! Nice to see you again!</string>
+    <string name="dialog_new_mark_title">🎉 Congrats!</string>
+    <string name="dialog_new_mark_description">New postmark received! Take a picture with it and capture the moment</string>
+    <string name="take_photo">Take a photo</string>
+    <string name="skip">Skip</string>
+    <string name="camera_emoji">📸</string>
+    <string name="dialog_location_error_description">Move closer to the postmark location to collect it!</string>
+    <string name="ok">OK</string>
+    <string name="share_photo">Share your postmark</string>
+    <string name="no_photo">No photo</string>
+    <string name="save">Save</string>
+    <string name="empty_notes">No notes yet...</string>
+    <string name="notes">Notes</string>
+    <string name="toggle_show_all">Show all</string>
+    <string name="toggle_group_by_city">Sort by city</string>
+</resources>
