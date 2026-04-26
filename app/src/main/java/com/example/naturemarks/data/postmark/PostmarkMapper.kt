@@ -1,5 +1,6 @@
 package com.example.naturemarks.data.postmark
 
+import android.location.Location
 import com.example.naturemarks.database.model.Postmark
 
 object PostmarkMapper {
@@ -25,4 +26,11 @@ object PostmarkMapper {
                 longitude = mark.longitude
             )
         )
+
+    fun MarkLocation.toLocation(): Location {
+        val location = Location("MarkLocation")
+        location.latitude = this.latitude
+        location.longitude = this.longitude
+        return location
+    }
 }

@@ -24,8 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.naturemarks.R
 import com.example.naturemarks.app.NatureMarksApplication
+import com.example.naturemarks.data.location.LocationRepository
 import com.example.naturemarks.data.memory.MemoryRepository
 import com.example.naturemarks.data.postmark.PostmarkRepository
+import com.example.naturemarks.data.storage.MediaStorageRepository
 import com.example.naturemarks.ui.components.PopUpDialog
 import com.example.naturemarks.ui.screens.scan.camera.CameraMode
 import com.example.naturemarks.ui.screens.scan.camera.CameraView
@@ -43,7 +45,9 @@ fun ScanScreen(
     val viewModel: ScanViewModel = viewModel(
         factory = ScanViewModelFactory(
             application = app,
-            postmarkRepository = PostmarkRepository(app.database, MemoryRepository(app.database))
+            postmarkRepository = PostmarkRepository(app.database, MemoryRepository(app.database)),
+            locationRepository = LocationRepository(app),
+            mediaStorageRepository = MediaStorageRepository(app)
         )
     )
 
