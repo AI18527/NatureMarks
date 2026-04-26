@@ -1,9 +1,12 @@
 package com.example.naturemarks.ui.screens.markdetails
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,11 +16,17 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
@@ -47,6 +56,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import coil.compose.rememberAsyncImagePainter
 import com.example.naturemarks.R
@@ -61,6 +71,9 @@ fun MarkDetailsScreen (
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as NatureMarksApplication
+
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val viewModel: MarkDetailsViewModel = viewModel(
         factory = MarkDetailsViewModelFactory(
@@ -89,39 +102,98 @@ fun MarkDetailsScreen (
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(WindowInsets.systemBars.asPaddingValues())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally )
-    {
-        if (state.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            state.postmark?.let { mark ->
-                Text(
-                    text = mark.name,
-                    style = MaterialTheme.typography.headlineMedium
+    if (state.isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+        state.postmark?.let { mark ->
+            if (!isLandscape) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(WindowInsets.systemBars.asPaddingValues())
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 )
-                PhotoView(
-                    photoUri = state.photo,
-                    sharePhoto = viewModel::onSharePhoto
-                )
-                NotesView(
-                    notes = state.notes,
-                    edit = state.edit,
-                    onEdit = { viewModel.editNotes() },
-                    update = { viewModel.updateNotes(it) },
-                    onSave = { viewModel.saveNotes(it) }
-                )
-                MapView(LatLng(mark.latitude, mark.longitude), mark)
+                {
+                    Text(
+                        text = mark.name,
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        PhotoView(
+                            photoUri = state.photo,
+                            sharePhoto = viewModel::onSharePhoto
+                        )
+
+                        NotesView(
+                            notes = state.notes,
+                            edit = state.edit,
+                            onEdit = { viewModel.editNotes() },
+                            update = { viewModel.updateNotes(it) },
+                            onSave = { viewModel.saveNotes(it) }
+                        )
+                    }
+
+                    MapView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        coordinates = LatLng(mark.latitude, mark.longitude),
+                        postmark = mark)
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(WindowInsets.systemBars.asPaddingValues())
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = mark.name,
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                        PhotoView(
+                            photoUri = state.photo,
+                            sharePhoto = viewModel::onSharePhoto
+                        )
+
+                        NotesView(
+                            notes = state.notes,
+                            edit = state.edit,
+                            onEdit = { viewModel.editNotes() },
+                            update = { viewModel.updateNotes(it) },
+                            onSave = { viewModel.saveNotes(it) }
+                        )
+                    }
+
+                    MapView(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        coordinates = LatLng(mark.latitude, mark.longitude),
+                        postmark = mark)
+                }
             }
         }
     }
@@ -142,13 +214,14 @@ fun PhotoView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(6.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.TopCenter
             ) {
                 Image(
                     painter = rememberAsyncImagePainter(photoUri),
                     contentDescription = null,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
+                        .wrapContentHeight(Alignment.CenterVertically)
                         .clip(RoundedCornerShape(16.dp))
                 )
                 IconButton(
@@ -222,7 +295,8 @@ fun NotesView(
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { update(it) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
                 Button(
@@ -241,6 +315,7 @@ fun NotesView(
 
 @Composable
 fun MapView(
+    modifier: Modifier,
     coordinates: LatLng,
     postmark: Postmark
 ) {
@@ -249,9 +324,7 @@ fun MapView(
     }
 
     GoogleMap(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(1f),
+        modifier = modifier,
         cameraPositionState = cameraPositionState
     ) {
         Marker(

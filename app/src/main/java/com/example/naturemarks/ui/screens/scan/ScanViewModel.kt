@@ -2,11 +2,7 @@ package com.example.naturemarks.ui.screens.scan
 
 import android.Manifest
 import android.app.Application
-import android.content.ContentValues
-import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
-import android.provider.MediaStore
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
@@ -53,6 +49,7 @@ class ScanViewModel(
 
     sealed class ScanEvent {
         data object NavigateToGallery : ScanEvent()
+        data object NavigateBack : ScanEvent()
     }
     private val _uiState = MutableStateFlow(ScanUiState(isLoading = false))
     val uiState: StateFlow<ScanUiState> = _uiState
@@ -149,7 +146,10 @@ class ScanViewModel(
     }
 
     fun hideLocationErrorDialog(){
-        _uiState.update { it.copy(showLocationErrorDialog = false, mark = null) }
+        _uiState.update { it.copy(showLocationErrorDialog = false) }
+        viewModelScope.launch {
+            _event.emit(ScanEvent.NavigateBack)
+        }
     }
 
     fun hideDialog(){

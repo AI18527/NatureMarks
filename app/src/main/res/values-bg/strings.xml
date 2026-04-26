@@ -5,7 +5,7 @@
     <string name="welcome_text">Да създаваме спомени с природата!</string>
     <string name="welcome_description">Събери колекция от марки от различни природни забележителности и ги запази като спомен за твоите приключения!</string>
     <string name="gallery">Галерия</string>
-    <string name="scan">Сканирай печат</string>
+    <string name="scan">Сканирай код</string>
     <string name="scan_code">Сканирай QR код</string>
     <string name="dialog_duplicate_title">Опа!</string>
     <string name="dialog_duplicate_description">Вече имате тази марка! Радваме се да Ви видим отново!</string>

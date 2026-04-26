@@ -57,6 +57,10 @@ fun ScanScreen(
                 is ScanViewModel.ScanEvent.NavigateToGallery -> {
                     onOpenGallery()
                 }
+
+                is ScanViewModel.ScanEvent.NavigateBack -> {
+                    onBack()
+                }
             }
         }
     }

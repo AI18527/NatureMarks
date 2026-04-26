@@ -4,7 +4,7 @@
     <string name="welcome_text">Let\'s create memories with the nature!</string>
     <string name="welcome_description">Make a collection of marks from various natural landmarks and keep them as a memento of your adventures!</string>
     <string name="gallery">Gallery</string>
-    <string name="scan">Scan postmark</string>
+    <string name="scan">Scan QR code</string>
     <string name="scan_code">Scan QR code</string>
     <string name="dialog_duplicate_title">Oops!</string>
     <string name="dialog_duplicate_description">You already have this postmark! Nice to see you again!</string>

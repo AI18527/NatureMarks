@@ -1,4 +1,4 @@
-package com.example.naturemarks.ui.screens.scan
+package com.example.naturemarks.util
 
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
