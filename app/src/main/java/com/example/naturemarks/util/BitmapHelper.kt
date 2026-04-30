@@ -1,6 +1,7 @@
 package com.example.naturemarks.util
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import androidx.annotation.DrawableRes
@@ -24,16 +25,18 @@ object BitmapHelper {
         val drawable = ContextCompat.getDrawable(context, drawableRes)
             ?: throw IllegalArgumentException("Drawable not found: $drawableRes")
 
-        val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth
-            else 1
+        val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+        val sizePx = (screenWidth * 0.8f).toInt()
 
-        val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight
-            else 1
+        val ratio = drawable.intrinsicWidth.toFloat() / drawable.intrinsicHeight
+
+        val width = sizePx
+        val height = (sizePx / ratio).toInt()
 
         val bitmap = createBitmap(width, height)
         val canvas = Canvas(bitmap)
 
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.setBounds(0, 0, width, height)
         drawable.draw(canvas)
 
         return bitmap

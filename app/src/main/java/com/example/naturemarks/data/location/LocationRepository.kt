@@ -33,8 +33,8 @@ LocationRepositoryInterface {
     ): Boolean {
         val distance = //userLocation.distanceTo(targetLocation)
             Location("").apply {
-                latitude = 41.773611
-                longitude = 23.406944
+                latitude = 42.629444
+                longitude = 23.254361
              }.distanceTo(targetLocation)
         return distance <= radiusMeters + userLocation.accuracy
     }
