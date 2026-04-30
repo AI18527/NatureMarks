@@ -68,8 +68,6 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
 
-    implementation(libs.barcode.scanning)
-
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.room.runtime)
@@ -82,6 +80,7 @@ dependencies {
     implementation(libs.maps.compose)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.play.services.barcode)
 
     implementation(libs.androidx.compose.material.icons.extended)
 
