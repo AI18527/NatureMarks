@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.ImageDecoder
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import java.io.OutputStream
-import androidx.core.graphics.scale
+import java.io.File
 
 object BitmapHelper {
     fun Bitmap.toMutableBitmap(): Bitmap {
@@ -18,6 +20,13 @@ object BitmapHelper {
     fun Bitmap.toJpegStream(stream: OutputStream, quality: Int = 100) {
         this.compress(Bitmap.CompressFormat.JPEG, quality, stream)
     }
+
+    fun fileToBitmap(context: Context, file: File): Bitmap {
+        val uri = Uri.fromFile(file)
+        val source = ImageDecoder.createSource(context.contentResolver, uri)
+        return ImageDecoder.decodeBitmap(source)
+    }
+
     fun drawableToBitmap(
         context: Context,
         @DrawableRes drawableRes: Int
@@ -26,7 +35,7 @@ object BitmapHelper {
             ?: throw IllegalArgumentException("Drawable not found: $drawableRes")
 
         val screenWidth = Resources.getSystem().displayMetrics.widthPixels
-        val sizePx = (screenWidth * 0.8f).toInt()
+        val sizePx = (180 * Resources.getSystem().displayMetrics.density).toInt()
 
         val ratio = drawable.intrinsicWidth.toFloat() / drawable.intrinsicHeight
 
@@ -53,9 +62,10 @@ object BitmapHelper {
         val canvas = result?.let { Canvas(it) }
         canvas?.drawBitmap(photo, 0f, 0f, null)
 
-        // Position postmark
-        val left = photo.width - mark.width - 32f
-        val top = photo.height - mark.height - 32f
+        val density = Resources.getSystem().displayMetrics.density
+        val paddingPx = (24 * density)
+        val left = photo.width - mark.width - paddingPx
+        val top = photo.height - mark.height - paddingPx
 
         canvas?.drawBitmap(mark, left, top, null)
 

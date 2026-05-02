@@ -6,8 +6,10 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import com.example.naturemarks.util.BitmapHelper.toJpegStream
+import java.io.File
 
 interface PhotoStorageRepositoryInterface {
+    fun createTempFile(context: Context): File
     fun savePhotoToGallery(bitmap: Bitmap): Uri?
 }
 
@@ -15,6 +17,9 @@ class MediaStorageRepository(
     private val context: Context
 ): PhotoStorageRepositoryInterface {
 
+    override fun createTempFile(context: Context): File {
+        return File.createTempFile("photo_", ".jpg", context.cacheDir)
+    }
     override fun savePhotoToGallery(bitmap: Bitmap): Uri? {
         val filename = String.format(System.currentTimeMillis().toString(), FILE_NAME_FORMAT)
 

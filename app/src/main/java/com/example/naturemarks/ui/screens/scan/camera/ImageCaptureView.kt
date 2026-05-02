@@ -1,6 +1,5 @@
 package com.example.naturemarks.ui.screens.scan.camera
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -28,11 +27,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.naturemarks.R
+import java.io.File
 
 @Composable
 fun ImageCaptureView(
     markId: Int,
-    onPhotoCaptured: (Bitmap) -> Unit
+    onPhotoCaptured: (File) -> Unit
 ) {
     var captureTrigger by remember { mutableStateOf(false) }
 
@@ -40,15 +40,13 @@ fun ImageCaptureView(
         CameraView(
             mode = CameraMode.CAPTURE,
             captureTrigger = captureTrigger,
-            onPhotoCaptured = { bitmap ->
-                captureTrigger = false
-                onPhotoCaptured(bitmap) }
+            onPhotoCaptured = onPhotoCaptured
         )
         Image(
             painter = painterResource(markId),
             contentDescription = null,
             modifier = Modifier
-                .size(160.dp)
+                .size(180.dp)
                 .align(Alignment.BottomEnd)
                 .padding(24.dp)
         )
