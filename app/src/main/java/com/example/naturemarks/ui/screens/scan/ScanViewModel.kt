@@ -2,7 +2,6 @@ package com.example.naturemarks.ui.screens.scan
 
 import android.Manifest
 import android.app.Application
-import android.graphics.Bitmap
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
@@ -16,6 +15,7 @@ import com.example.naturemarks.data.postmark.PostmarkRepository
 import com.example.naturemarks.data.postmark.PostmarkModel
 import com.example.naturemarks.data.storage.MediaStorageRepository
 import com.example.naturemarks.ui.screens.scan.camera.CameraMode
+import com.example.naturemarks.ui.screens.scan.data.PopUpDialogUiModel
 import com.example.naturemarks.util.BitmapHelper
 import com.example.naturemarks.util.BitmapHelper.toMutableBitmap
 import com.example.naturemarks.util.MarkImageHelper
@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import java.io.File
 
 class ScanViewModel(
     application: Application,
@@ -36,16 +37,18 @@ class ScanViewModel(
     private val mediaStorageRepository: MediaStorageRepository
 ) : AndroidViewModel(application) {
 
+    enum class DialogType {
+        SUCCESS, DUPLICATE, LOCATION, ERROR
+    }
     data class ScanUiState(
         val isLoading: Boolean = false,
-        val showDialog: Boolean = false,
-        val showErrorDialog: Boolean = false,
-        val showDuplicateErrorDialog: Boolean = false,
-        val showLocationErrorDialog: Boolean = false,
+        val showDialog : Boolean = false,
+        val dialogType : DialogType? = null,
         val mark: PostmarkModel? = null,
         val memoryId: Int? = null,
         val markRes: Int = R.drawable.mark,
-        val cameraMode: CameraMode = CameraMode.SCAN
+        val cameraMode: CameraMode = CameraMode.SCAN,
+        val popUpDialog : PopUpDialogUiModel? = null
     )
 
     sealed class ScanEvent {
@@ -68,7 +71,7 @@ class ScanViewModel(
         try {
             Json.decodeFromString<PostmarkModel>(raw)
         } catch (e: Exception) {
-            _uiState.update { it.copy(showErrorDialog = true) }
+            _uiState.update { it.copy(showDialog = true, dialogType = DialogType.ERROR) }
             return
         }
         val mark = Json.decodeFromString<PostmarkModel>(raw)
@@ -88,7 +91,7 @@ class ScanViewModel(
 
                 if (isInside) saveMark(mark)
                 else _uiState.update {
-                    it.copy(showLocationErrorDialog = true)
+                    it.copy(showDialog = true, dialogType = DialogType.LOCATION)
                 }
             }
         }
@@ -97,19 +100,21 @@ class ScanViewModel(
     fun prepareForPhotoCapture(){
         _uiState.update {
             it.copy(
-                cameraMode = CameraMode.CAPTURE,
-                showDialog = false
+                cameraMode = CameraMode.CAPTURE
             )
         }
     }
 
-    fun onPhotoCaptured(bitmap: Bitmap) {
+    fun onPhotoCaptured(file: File) {
         val markRes = _uiState.value.markRes
         _uiState.update { it.copy(isLoading = true) }
+
         viewModelScope.launch(Dispatchers.IO) {
-            val safeBitmap = bitmap.toMutableBitmap()
+
+            val bitmap = BitmapHelper.fileToBitmap(getApplication(), file).toMutableBitmap()
             val markBitmap = BitmapHelper.drawableToBitmap(getApplication(), markRes)
-            val finalImage = BitmapHelper.overlayMark(safeBitmap, markBitmap)
+            val finalImage = BitmapHelper.overlayMark(bitmap, markBitmap)
+
             finalImage?.let {
                 val uri = mediaStorageRepository.savePhotoToGallery(finalImage)
                 uri?.let {
@@ -128,9 +133,9 @@ class ScanViewModel(
             try {
                 postmarkRepository.addMark(mark)
                 addNewMemory(mark.imageId)
-                _uiState.update { it.copy(showDialog = true) }
+                _uiState.update { it.copy(showDialog = true, dialogType = DialogType.SUCCESS) }
             } catch (e: IllegalArgumentException) {
-                _uiState.update { it.copy(showDuplicateErrorDialog = true) }
+                _uiState.update { it.copy(showDialog = true, dialogType = DialogType.DUPLICATE) }
             }
         }
     }
@@ -145,24 +150,6 @@ class ScanViewModel(
     fun savePhotoToMemory(memoryId: Int, photoPath: String) {
         viewModelScope.launch {
             postmarkRepository.updateMarkMemoryPhoto(memoryId, photoPath)
-        }
-    }
-
-    fun onCloseErrorDialog(){
-        _uiState.update { it.copy(showErrorDialog = false) }
-        viewModelScope.launch {
-            _event.emit(ScanEvent.NavigateBack)
-        }
-    }
-
-    fun onCloseDuplicateErrorDialog(){
-        _uiState.update { it.copy(showDuplicateErrorDialog = false) }
-    }
-
-    fun onCloseLocationErrorDialog(){
-        _uiState.update { it.copy(showLocationErrorDialog = false) }
-        viewModelScope.launch {
-            _event.emit(ScanEvent.NavigateBack)
         }
     }
 
