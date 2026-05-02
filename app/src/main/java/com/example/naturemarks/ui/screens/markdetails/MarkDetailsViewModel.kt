@@ -6,12 +6,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.naturemarks.data.postmark.PostmarkRepository
 import com.example.naturemarks.database.model.Postmark
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MarkDetailsViewModel(
     private val postmarkRepository: PostmarkRepository,
@@ -20,7 +22,7 @@ class MarkDetailsViewModel(
     data class MarkDetailsUiState(
         val postmark: Postmark? = null,
         val memoryId: Int? = null,
-        val isLoading: Boolean = false,
+        val isDbLoading: Boolean = false,
         val photo: Uri? = null,
         val notes: String = "",
         val edit: Boolean = false
@@ -29,7 +31,7 @@ class MarkDetailsViewModel(
     sealed class MarkDetailsEvent {
         data class SharePhoto(val uri: Uri) : MarkDetailsEvent()
     }
-    private val _uiState = MutableStateFlow(MarkDetailsUiState(isLoading = true))
+    private val _uiState = MutableStateFlow(MarkDetailsUiState(isDbLoading = true))
     val uiState: StateFlow<MarkDetailsUiState> = _uiState
 
     private val _event = MutableSharedFlow<MarkDetailsEvent>()
@@ -41,18 +43,19 @@ class MarkDetailsViewModel(
 
     fun loadMarkDetails(markId: String) {
         viewModelScope.launch {
-            postmarkRepository.getMarkDetails(markId)
-                .let { details ->
-                    _uiState.update {
-                        it.copy(
-                            postmark = details.postmark,
-                            memoryId = details.memoryId,
-                            isLoading = false,
-                            notes = details.notes ?: "",
-                            photo = details.photoUri
-                        )
-                    }
-                }
+            val details = withContext(Dispatchers.IO) {
+                postmarkRepository.getMarkDetails(markId)
+            }
+
+            _uiState.update {
+                it.copy(
+                    postmark = details.postmark,
+                    memoryId = details.memoryId,
+                    isDbLoading = false,
+                    notes = details.notes ?: "",
+                    photo = details.photoUri
+                )
+            }
         }
     }
 

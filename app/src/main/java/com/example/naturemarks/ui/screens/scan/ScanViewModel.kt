@@ -115,16 +115,12 @@ class ScanViewModel(
             val markBitmap = BitmapHelper.drawableToBitmap(getApplication(), markRes)
             val finalImage = BitmapHelper.overlayMark(bitmap, markBitmap)
 
-            finalImage?.let {
-                val uri = mediaStorageRepository.savePhotoToGallery(finalImage)
-                uri?.let {
-                    savePhotoToMemory(uiState.value.memoryId ?: return@let, it.toString())
-                    _uiState.update { it.copy(isLoading = false) }
-                    withContext(Dispatchers.Main) {
-                        _event.emit(ScanEvent.NavigateToGallery)
-                    }
-                }
-            } ?: _event.emit(ScanEvent.NavigateToGallery)
+            val uri = mediaStorageRepository.savePhotoToGallery(finalImage)
+            uri?.let {
+                savePhotoToMemory(uiState.value.memoryId ?: return@let, it.toString())
+                _uiState.update { it.copy(isLoading = false) }
+            }
+            _event.emit(ScanEvent.NavigateToGallery)
         }
     }
 

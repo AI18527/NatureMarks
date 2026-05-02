@@ -52,17 +52,23 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import coil.compose.rememberAsyncImagePainter
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.naturemarks.R
 import com.example.naturemarks.data.memory.MemoryRepository
 import com.example.naturemarks.database.model.Postmark
 import com.google.maps.android.compose.rememberUpdatedMarkerState
+import kotlinx.coroutines.android.awaitFrame
 
 @Composable
 fun MarkDetailsScreen (
@@ -82,7 +88,9 @@ fun MarkDetailsScreen (
         )
     )
 
-    val state = viewModel.uiState.collectAsState().value
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var showMap by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
@@ -102,7 +110,14 @@ fun MarkDetailsScreen (
         }
     }
 
-    if (state.isLoading) {
+    LaunchedEffect(state.isDbLoading) {
+        if (!state.isDbLoading && !showMap) {
+            awaitFrame()
+            showMap = true
+        }
+    }
+
+    if (state.isDbLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -146,12 +161,25 @@ fun MarkDetailsScreen (
                         )
                     }
 
-                    MapView(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        coordinates = LatLng(mark.latitude, mark.longitude),
-                        postmark = mark)
+                    if (showMap) {
+                        MapView(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            coordinates = LatLng(mark.latitude, mark.longitude),
+                            postmark = mark
+                        )
+                    }
+                    else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
                 }
             } else {
                 Row(
@@ -186,13 +214,24 @@ fun MarkDetailsScreen (
                             onSave = { viewModel.saveNotes(it) }
                         )
                     }
-
-                    MapView(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        coordinates = LatLng(mark.latitude, mark.longitude),
-                        postmark = mark)
+                    if (showMap) {
+                        MapView(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            coordinates = LatLng(mark.latitude, mark.longitude),
+                            postmark = mark
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
                 }
             }
         }
@@ -216,8 +255,11 @@ fun PhotoView(
                     .padding(6.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(photoUri),
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(photoUri)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier

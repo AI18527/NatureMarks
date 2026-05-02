@@ -50,7 +50,7 @@ object BitmapHelper {
     fun overlayMark(
         photo: Bitmap,
         mark: Bitmap
-    ): Bitmap? {
+    ): Bitmap {
         val config = photo.config ?: Bitmap.Config.ARGB_8888
         val result = photo.copy(config, true)
         val canvas = Canvas(result)

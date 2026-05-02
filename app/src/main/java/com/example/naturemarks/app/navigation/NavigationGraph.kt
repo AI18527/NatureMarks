@@ -1,5 +1,6 @@
 package com.example.naturemarks.app.navigation
 
+import androidx.annotation.RequiresPermission
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -15,6 +16,7 @@ import com.example.naturemarks.ui.screens.welcome.WelcomeScreen
 import com.example.naturemarks.ui.screens.welcome.WelcomeViewModel
 
 @Composable
+@RequiresPermission(allOf = ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"])
 fun NavigationGraph() {
     val navController = rememberNavController()
 
@@ -72,7 +74,6 @@ fun NavigationGraph() {
             val parentEntry = remember(backStackEntry) {
                 navController.getBackStackEntry(Screen.Welcome.route)
             }
-
             ScanScreen(
                 onBack = { navController.popBackStack() },
                 onOpenGallery = {
