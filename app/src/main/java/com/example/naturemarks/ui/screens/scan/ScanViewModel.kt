@@ -109,8 +109,7 @@ class ScanViewModel(
         val markRes = _uiState.value.markRes
         _uiState.update { it.copy(isLoading = true) }
 
-        viewModelScope.launch(Dispatchers.IO) {
-
+        viewModelScope.launch {
             val bitmap = BitmapHelper.fileToBitmap(getApplication(), file).toMutableBitmap()
             val markBitmap = BitmapHelper.drawableToBitmap(getApplication(), markRes)
             val finalImage = BitmapHelper.overlayMark(bitmap, markBitmap)

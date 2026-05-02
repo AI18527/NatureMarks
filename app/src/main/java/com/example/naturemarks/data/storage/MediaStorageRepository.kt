@@ -6,44 +6,42 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import com.example.naturemarks.util.BitmapHelper.toJpegStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 interface PhotoStorageRepositoryInterface {
-    fun createTempFile(context: Context): File
-    fun savePhotoToGallery(bitmap: Bitmap): Uri?
+    suspend fun savePhotoToGallery(bitmap: Bitmap): Uri?
 }
 
 class MediaStorageRepository(
     private val context: Context
 ): PhotoStorageRepositoryInterface {
+    override suspend fun savePhotoToGallery(bitmap: Bitmap): Uri? =
+        withContext(Dispatchers.IO) {
+            val filename = String.format(System.currentTimeMillis().toString(), FILE_NAME_FORMAT)
 
-    override fun createTempFile(context: Context): File {
-        return File.createTempFile("photo_", ".jpg", context.cacheDir)
-    }
-    override fun savePhotoToGallery(bitmap: Bitmap): Uri? {
-        val filename = String.format(System.currentTimeMillis().toString(), FILE_NAME_FORMAT)
+            val resolver = context.contentResolver
 
-        val resolver = context.contentResolver
-
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-            put(MediaStore.MediaColumns.MIME_TYPE, MIME_TYPE)
-            put(MediaStore.MediaColumns.RELATIVE_PATH, DIRECTORY_PATH)
-        }
-
-        val uri = resolver.insert(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            contentValues
-        )
-
-        uri?.let {
-            resolver.openOutputStream(it)?.use { stream ->
-                bitmap.toJpegStream(stream)
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                put(MediaStore.MediaColumns.MIME_TYPE, MIME_TYPE)
+                put(MediaStore.MediaColumns.RELATIVE_PATH, DIRECTORY_PATH)
             }
-        }
 
-        return uri
-    }
+            val uri = resolver.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                contentValues
+            )
+
+            uri?.let {
+                resolver.openOutputStream(it)?.use { stream ->
+                    bitmap.toJpegStream(stream)
+                }
+            }
+
+            uri
+        }
 
     companion object {
         const val FILE_NAME_FORMAT = "Mark_%d.jpg"
