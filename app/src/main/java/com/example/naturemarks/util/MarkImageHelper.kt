@@ -3,7 +3,6 @@ package com.example.naturemarks.util
 import com.example.naturemarks.R
 
 object MarkImageHelper {
-
     fun getMarkImage(resName: String): Int =
         when (resName) {
             "tu_sofia" -> R.drawable.tu_sofia

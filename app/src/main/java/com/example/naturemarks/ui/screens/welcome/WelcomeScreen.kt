@@ -29,9 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.naturemarks.R
 
 @Composable
@@ -48,14 +46,7 @@ fun WelcomeScreen (
     onOpenGallery: () -> Unit
 ) {
     val context = LocalContext.current
-
-    // Check permissions
-    var arePermissionsGranted by remember {
-        mutableStateOf(
-            context.hasPermission(Manifest.permission.CAMERA) &&
-                    context.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-        )
-    }
+    val permissionsGranted by viewModel.permissionsGranted.collectAsStateWithLifecycle()
 
     val permissions = arrayOf(
         Manifest.permission.CAMERA,
@@ -66,23 +57,21 @@ fun WelcomeScreen (
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         val allGranted = results.values.all { it }
-        arePermissionsGranted = allGranted
+        viewModel.updatePermissions(allGranted)
 
         if (!allGranted)  {
-            Toast.makeText(
-                context,
-                context.getString(R.string.allow_permissions),
-                Toast.LENGTH_LONG
-            ).show()
+            showToast(context)
         }
     }
 
     LaunchedEffect(Unit) {
-        val toRequest = permissions.filter {
-            ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+        val allGranted = permissions.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
-        if (toRequest.isNotEmpty()) {
-            launcher.launch(toRequest.toTypedArray())
+        viewModel.updatePermissions(allGranted)
+
+        if (!allGranted) {
+            launcher.launch(permissions)
         }
     }
 
@@ -112,7 +101,6 @@ fun WelcomeScreen (
             )
         }
 
-        // Action section
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -135,8 +123,8 @@ fun WelcomeScreen (
 
             OutlinedButton(
                 onClick = {
-                    if (!arePermissionsGranted){
-                        Toast.makeText(context, R.string.allow_permissions, Toast.LENGTH_SHORT).show()
+                    if (!permissionsGranted){
+                        showToast(context)
                     }
                     else onOpenScan()
                 },
@@ -156,6 +144,10 @@ fun WelcomeScreen (
 
         Spacer(modifier = Modifier.height(16.dp))
     }
+}
+
+fun showToast(context: Context) {
+    Toast.makeText(context, R.string.allow_permissions, Toast.LENGTH_SHORT).show()
 }
 
 fun Context.hasPermission(permission: String): Boolean {
