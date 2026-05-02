@@ -46,9 +46,9 @@ fun ImageCaptureView(
             painter = painterResource(markId),
             contentDescription = null,
             modifier = Modifier
-                .size(180.dp)
-                .align(Alignment.BottomEnd)
                 .padding(24.dp)
+                .size(160.dp)
+                .align(Alignment.BottomEnd)
         )
         Box(
             modifier = Modifier
