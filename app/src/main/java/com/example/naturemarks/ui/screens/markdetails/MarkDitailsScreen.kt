@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -248,7 +249,7 @@ fun PhotoView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(6.dp),
-                contentAlignment = Alignment.TopCenter
+                contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -258,7 +259,7 @@ fun PhotoView(
                     contentDescription = null,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .wrapContentHeight(Alignment.CenterVertically)
+                        .wrapContentSize(Alignment.Center)
                         .clip(RoundedCornerShape(16.dp))
                 )
                 IconButton(
