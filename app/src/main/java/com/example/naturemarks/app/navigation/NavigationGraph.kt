@@ -22,9 +22,9 @@ fun NavigationGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Welcome.route
+        startDestination = Destination.Welcome.route
     ) {
-        composable (Screen.Welcome.route) { backStackEntry ->
+        composable (Destination.Welcome.route) { backStackEntry ->
             val viewModel: WelcomeViewModel =
                 viewModel(backStackEntry)
 
@@ -32,20 +32,20 @@ fun NavigationGraph() {
                 viewModel = viewModel,
                 onOpenGallery = {
                     navController.navigate(
-                        Screen.Gallery.route
+                        Destination.Gallery.route
                     )
                 },
                 onOpenScan = {
-                    navController.navigate(Screen.Scan.route)
+                    navController.navigate(Destination.Scan.route)
                 }
             )
         }
 
-        composable(Screen.Gallery.route) {
+        composable(Destination.Gallery.route) {
             GalleryScreen(
                 onMarkClicked = {
                     navController.navigate(
-                        Screen.MarkDetails.createRoute(it)
+                        Destination.MarkDetails.createRoute(it)
                     )
                 },
                 onBack = { navController.popBackStack() }
@@ -53,13 +53,13 @@ fun NavigationGraph() {
         }
 
         composable(
-            route = Screen.MarkDetails.route,
+            route = Destination.MarkDetails.route,
             arguments = listOf(navArgument("markId") {
                 type = NavType.StringType
             })
         ){ backStackEntry ->
             val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Screen.Gallery.route)
+                navController.getBackStackEntry(Destination.Gallery.route)
             }
 
             val markId =
@@ -70,15 +70,15 @@ fun NavigationGraph() {
             ) { navController.popBackStack() }
         }
 
-        composable(Screen.Scan.route) { backStackEntry ->
+        composable(Destination.Scan.route) { backStackEntry ->
             val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Screen.Welcome.route)
+                navController.getBackStackEntry(Destination.Welcome.route)
             }
             ScanScreen(
                 onBack = { navController.popBackStack() },
                 onOpenGallery = {
-                    navController.navigate(Screen.Gallery.route) {
-                        popUpTo(Screen.Scan.route) {
+                    navController.navigate(Destination.Gallery.route) {
+                        popUpTo(Destination.Scan.route) {
                             inclusive = true
                         }
                     }
