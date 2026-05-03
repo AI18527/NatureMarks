@@ -37,8 +37,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.naturemarks.R
 import com.example.naturemarks.app.NatureMarksApplication
 import com.example.naturemarks.data.memory.MemoryRepository
-import com.example.naturemarks.data.postmark.PostmarkModel
 import com.example.naturemarks.data.postmark.PostmarkRepository
+import com.example.naturemarks.ui.model.PostmarkUiModel
 import com.example.naturemarks.util.MarkImageHelper
 
 @Composable
@@ -146,7 +146,7 @@ fun CityHeader(city: String) {
 
 @Composable
 fun MarkItem(
-    mark: PostmarkModel,
+    mark: PostmarkUiModel,
     onMarkClicked: (String) -> Unit
 ){
     val markImage = MarkImageHelper.getMarkImage(mark.imageId)

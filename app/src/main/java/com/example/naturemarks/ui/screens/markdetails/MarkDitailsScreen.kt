@@ -3,10 +3,7 @@ package com.example.naturemarks.ui.screens.markdetails
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,12 +14,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -66,7 +61,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.naturemarks.R
 import com.example.naturemarks.data.memory.MemoryRepository
-import com.example.naturemarks.database.model.Postmark
+import com.example.naturemarks.ui.model.PostmarkUiModel
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import kotlinx.coroutines.android.awaitFrame
 
@@ -166,7 +161,7 @@ fun MarkDetailsScreen (
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(200.dp),
-                            coordinates = LatLng(mark.latitude, mark.longitude),
+                            coordinates = LatLng(mark.location.latitude, mark.location.longitude),
                             postmark = mark
                         )
                     }
@@ -219,7 +214,7 @@ fun MarkDetailsScreen (
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight(),
-                            coordinates = LatLng(mark.latitude, mark.longitude),
+                            coordinates = LatLng(mark.location.latitude, mark.location.longitude),
                             postmark = mark
                         )
                     } else {
@@ -359,7 +354,7 @@ fun NotesView(
 fun MapView(
     modifier: Modifier,
     coordinates: LatLng,
-    postmark: Postmark
+    postmark: PostmarkUiModel
 ) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(coordinates, 10f)

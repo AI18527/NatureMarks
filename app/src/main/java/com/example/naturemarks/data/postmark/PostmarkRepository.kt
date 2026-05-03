@@ -3,15 +3,17 @@ package com.example.naturemarks.data.postmark
 import androidx.core.net.toUri
 import com.example.naturemarks.data.memory.MemoryRepository
 import com.example.naturemarks.database.AppDatabase
-import com.example.naturemarks.database.model.Postmark
+import com.example.naturemarks.ui.model.PostmarkUiModel
 import com.example.naturemarks.ui.screens.markdetails.model.MarkDetails
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 
 interface PostmarkRepositoryInterface {
-    suspend fun getAllMarks(): List<Postmark>?
-    suspend fun getMarkById(imageId: String): Postmark
-    suspend fun addMark(mark: PostmarkModel)
+    suspend fun getAllMarks(): List<PostmarkUiModel>?
+    suspend fun getMarkById(imageId: String): PostmarkUiModel
+    suspend fun addMark(mark: PostmarkUiModel)
+    fun getMarkFromQrCode(rawData: String): PostmarkUiModel?
     suspend fun getMarkDetails(markId: String): MarkDetails
     fun addNewMemoryForMark(markId: String)
     suspend fun updateMarkMemoryPhoto(memoryId: Int, photoPath: String)
@@ -22,16 +24,16 @@ class PostmarkRepository (
     private val memoryRepository: MemoryRepository
 ): PostmarkRepositoryInterface {
     val mapper = PostmarkMapper
-    override suspend fun getAllMarks(): List<Postmark>? =
+    override suspend fun getAllMarks(): List<PostmarkUiModel>? =
         withContext(Dispatchers.IO) {
-            db.postmarkDao().getAll()
+            db.postmarkDao().getAll()?.map{ mapper.mapToMarkModel(it) }
         }
 
-    override suspend fun getMarkById(imageId: String): Postmark =
+    override suspend fun getMarkById(imageId: String): PostmarkUiModel =
         withContext(Dispatchers.IO) {
-            db.postmarkDao().getMarkById(imageId)
+            mapper.mapToMarkModel(db.postmarkDao().getMarkById(imageId))
         }
-    override suspend fun addMark(mark: PostmarkModel) {
+    override suspend fun addMark(mark: PostmarkUiModel) {
         val markRecord = mapper.mapToMarkEntry(mark)
         getAllMarks()?.let {
             if (it.any { it.imageId == markRecord.imageId }) {
@@ -41,6 +43,15 @@ class PostmarkRepository (
                 db.postmarkDao().insert(markRecord)
             }
         }
+    }
+
+    override fun getMarkFromQrCode(rawData: String): PostmarkUiModel? =
+        try {
+            val mark = Json.decodeFromString<PostmarkModel>(rawData)
+            mapper.mapToMarkModel(mark)
+        } catch (e: Exception) {
+            null
+
     }
 
     override suspend fun getMarkDetails(markId: String): MarkDetails {

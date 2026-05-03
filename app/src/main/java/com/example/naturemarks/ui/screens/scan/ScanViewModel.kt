@@ -10,10 +10,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.naturemarks.R
 import com.example.naturemarks.app.NatureMarksApplication
 import com.example.naturemarks.data.location.LocationRepository
-import com.example.naturemarks.data.postmark.PostmarkMapper.toLocation
 import com.example.naturemarks.data.postmark.PostmarkRepository
-import com.example.naturemarks.data.postmark.PostmarkModel
 import com.example.naturemarks.data.storage.MediaStorageRepository
+import com.example.naturemarks.ui.model.PostmarkUiModel
 import com.example.naturemarks.ui.screens.scan.camera.CameraMode
 import com.example.naturemarks.ui.screens.scan.data.PopUpDialogUiModel
 import com.example.naturemarks.util.BitmapHelper
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import java.io.File
 
 class ScanViewModel(
@@ -44,7 +42,7 @@ class ScanViewModel(
         val isLoading: Boolean = false,
         val showDialog : Boolean = false,
         val dialogType : DialogType? = null,
-        val mark: PostmarkModel? = null,
+        val mark: PostmarkUiModel? = null,
         val memoryId: Int? = null,
         val markRes: Int = R.drawable.mark,
         val cameraMode: CameraMode = CameraMode.SCAN,
@@ -68,30 +66,27 @@ class ScanViewModel(
     fun onQrScanned(raw: String) {
         if (_uiState.value.mark != null) return
 
-        try {
-            Json.decodeFromString<PostmarkModel>(raw)
-        } catch (e: Exception) {
-            _uiState.update { it.copy(showDialog = true, dialogType = DialogType.ERROR) }
-            return
-        }
-        val mark = Json.decodeFromString<PostmarkModel>(raw)
-        _uiState.update {
-            it.copy(
-                mark = mark,
-                markRes = MarkImageHelper.getMarkImage(mark.imageId)
-            )
-        }
-        viewModelScope.launch {
-            locationRepository.getUserLocation()?.let { userLocation ->
-                val isInside = locationRepository.isWithinRadius(
-                    userLocation = userLocation,
-                    targetLocation = mark.location.toLocation(),
-                    radiusMeters = 10f
+        val markFromQr = postmarkRepository.getMarkFromQrCode(raw)
+        markFromQr?.let { mark ->
+            _uiState.update {
+                it.copy(
+                    mark = mark,
+                    markRes = MarkImageHelper.getMarkImage(mark.imageId)
                 )
+            }
 
-                if (isInside) saveMark(mark)
-                else _uiState.update {
-                    it.copy(showDialog = true, dialogType = DialogType.LOCATION)
+            viewModelScope.launch {
+                locationRepository.getUserLocation()?.let { userLocation ->
+                    val isInside = locationRepository.isWithinRadius(
+                        userLocation = userLocation,
+                        targetLocation = mark.location,
+                        radiusMeters = 10f
+                    )
+
+                    if (isInside) saveMark(mark)
+                    else _uiState.update {
+                        it.copy(showDialog = true, dialogType = DialogType.LOCATION)
+                    }
                 }
             }
         }
@@ -123,7 +118,7 @@ class ScanViewModel(
         }
     }
 
-    fun saveMark(mark: PostmarkModel) {
+    fun saveMark(mark: PostmarkUiModel) {
         viewModelScope.launch {
             try {
                 postmarkRepository.addMark(mark)

@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.naturemarks.data.postmark.PostmarkRepository
-import com.example.naturemarks.data.postmark.PostmarkMapper
-import com.example.naturemarks.data.postmark.PostmarkModel
+import com.example.naturemarks.ui.model.PostmarkUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -17,13 +16,13 @@ class GalleryViewModel(
 
     data class GalleryUiState(
         val isLoading: Boolean = false,
-        val marks: List<PostmarkModel> = emptyList(),
+        val marks: List<PostmarkUiModel> = emptyList(),
         val groupedByCity: Boolean = false
     )
 
     data class CityGroup(
         val city: String,
-        val items: List<PostmarkModel>
+        val items: List<PostmarkUiModel>
     )
 
     private val _uiState = MutableStateFlow(
@@ -39,9 +38,7 @@ class GalleryViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            val marks = postmarkRepository.getAllMarks()?.map {
-                PostmarkMapper.mapToMarkModel(it)
-            }?.reversed() ?: emptyList()
+            val marks = postmarkRepository.getAllMarks()?.reversed() ?: emptyList()
 
             _uiState.update { it.copy(isLoading = false, marks = marks) }
         }
@@ -55,7 +52,7 @@ class GalleryViewModel(
 
     fun getGroupedMarks(): List<CityGroup> {
         return _uiState.value.marks
-            .groupBy { it.location.city }
+            .groupBy { it.city }
             .map { (city, marks) ->
                 CityGroup(
                     city = city,

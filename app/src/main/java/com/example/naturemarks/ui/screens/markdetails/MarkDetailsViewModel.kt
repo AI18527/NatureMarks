@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.naturemarks.data.postmark.PostmarkRepository
-import com.example.naturemarks.database.model.Postmark
+import com.example.naturemarks.ui.model.PostmarkUiModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +20,7 @@ class MarkDetailsViewModel(
     markId: String
 ): ViewModel() {
     data class MarkDetailsUiState(
-        val postmark: Postmark? = null,
+        val postmark: PostmarkUiModel? = null,
         val memoryId: Int? = null,
         val isDbLoading: Boolean = false,
         val photo: Uri? = null,
